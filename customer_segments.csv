@@ -1,0 +1,11 @@
+customer_id,city,total_orders,total_spend,segment,segment_name
+CUST0001,Chennai,12,6500,2,Regular
+CUST0002,Coimbatore,5,2200,0,Low Value
+CUST0003,Madurai,20,12000,1,High Value
+CUST0004,Trichy,8,4000,0,Low Value
+CUST0005,Salem,3,900,0,Low Value
+CUST0006,Chennai,15,7800,2,Regular
+CUST0007,Erode,7,3100,0,Low Value
+CUST0008,Madurai,10,5200,2,Regular
+CUST0009,Trichy,4,1500,0,Low Value
+CUST0010,Salem,18,9500,1,High Value

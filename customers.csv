@@ -1,0 +1,11 @@
+customer_id,city,total_orders,total_spend
+CUST0001,Chennai,12,6500
+CUST0002,Coimbatore,5,2200
+CUST0003,Madurai,20,12000
+CUST0004,Trichy,8,4000
+CUST0005,Salem,3,900
+CUST0006,Chennai,15,7800
+CUST0007,Erode,7,3100
+CUST0008,Madurai,10,5200
+CUST0009,Trichy,4,1500
+CUST0010,Salem,18,9500
