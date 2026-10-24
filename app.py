@@ -142,13 +142,13 @@ elif page == "Ticket Classifier":
 # Initialize SQLite database
 DB_PATH = DATA_DIR / "instamart.db"
 SCHEMA_PATH = BASE_DIR / "schema.sql"
-
 def initialize_database():
     DATA_DIR.mkdir(parents=True, exist_ok=True)
 
     with sqlite3.connect(DB_PATH) as conn:
         if SCHEMA_PATH.exists():
             schema = SCHEMA_PATH.read_text(encoding="utf-8")
+
             statements = [
                 statement.strip()
                 for statement in schema.split(";")
@@ -158,7 +158,31 @@ def initialize_database():
             for statement in statements:
                 conn.execute(statement)
 
+        customers_file = DATA_DIR / "customers.csv"
+        if customers_file.exists():
+            customers = pd.read_csv(customers_file)
+
+            customers.to_sql(
+                "customers",
+                conn,
+                if_exists="replace",
+                index=False,
+            )
+
+        tickets_file = DATA_DIR / "support_tickets.csv"
+        if tickets_file.exists():
+            tickets = pd.read_csv(tickets_file)
+
+            tickets.to_sql(
+                "support_tickets",
+                conn,
+                if_exists="replace",
+                index=False,
+            )
+
+
 initialize_database()
+
 
 # SQL Analytics
 elif page == "SQL Analytics":
