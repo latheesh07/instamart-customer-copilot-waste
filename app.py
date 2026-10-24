@@ -161,32 +161,27 @@ elif page == "Customer Analytics":
 
     rfm_file = REPORT_DIR / "rfm_customer_analysis.csv"
 
-    if st.button("Generate RFM Analysis"):
+   if st.button("Generate RFM Analysis"):
+        import subprocess
+        import sys
+        from pathlib import Path
+
+        script_path = Path("src") / "analyze_customers.py"
+
         try:
-           from pathlib import Path
-import subprocess
-import sys
-
-script_path = Path("src") / "analyze_customers.py"
-
-result = subprocess.run(
-    [sys.executable, str(script_path)],
-    capture_output=True,
-    text=True,
-    cwd=".",
-)
-
-if result.returncode == 0:
-    st.success("Customer analysis completed.")
-    st.text(result.stdout)
-else:
-    st.error(result.stderr)
-            main()
-        except ImportError:
-            st.info(
-                "The analysis script currently runs directly. "
-                "We will connect it to the app in the next step."
+            result = subprocess.run(
+                [sys.executable, str(script_path)],
+                capture_output=True,
+                text=True,
+                cwd=".",
             )
+
+            if result.returncode == 0:
+                st.success("Customer analysis completed.")
+                st.text(result.stdout)
+            else:
+                st.error(result.stderr)
+
         except Exception as exc:
             st.error(f"RFM analysis error: {exc}")
 
