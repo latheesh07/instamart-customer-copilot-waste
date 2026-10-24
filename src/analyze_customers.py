@@ -123,7 +123,9 @@ else:
             rfm = rfm.drop(columns=["last_order_date"])
 
             rfm.to_csv(
-                REPORT_DIR / "rfm_customer_analysis.csv",
+    REPORT_DIR / "rfm_customer_analysis.csv",
+    index=False
+)
 
                 if __name__ == "__main__":
     print("Customer analysis script completed.")
