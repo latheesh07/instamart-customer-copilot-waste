@@ -195,6 +195,46 @@ elif page == "Ticket Classifier":
 
 # SQL Analytics
 elif page == "SQL Analytics":
+# Lapse Prediction
+elif page == "Lapse Prediction":
+    st.header("Customer Lapse Prediction")
+
+    st.caption(
+        "Demo inactivity analysis using synthetic order history. "
+        "This is a rule-based prototype, not a trained ML model."
+    )
+
+    lapse_file = REPORT_DIR / "lapse_predictions.csv"
+
+    if st.button("Generate Lapse Predictions"):
+        try:
+            from lapse_prediction import predict_lapse
+
+            predict_lapse()
+
+            if lapse_file.exists():
+                df_lapse = pd.read_csv(lapse_file)
+
+                st.success("Lapse report generated successfully!")
+
+                st.dataframe(
+                    df_lapse,
+                    use_container_width=True
+                )
+
+                st.download_button(
+                    "Download Lapse Predictions CSV",
+                    data=df_lapse.to_csv(index=False).encode("utf-8"),
+                    file_name="lapse_predictions.csv",
+                    mime="text/csv",
+                )
+            else:
+                st.warning(
+                    "Report not created. Check orders.csv and customer IDs."
+                )
+
+        except Exception as exc:
+            st.error(f"Lapse prediction error: {exc}")
     st.header("SQLite Database Analytics")
 
     DB_PATH = DATA_DIR / "instamart.db"
