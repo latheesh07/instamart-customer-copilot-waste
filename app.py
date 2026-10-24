@@ -155,10 +155,9 @@ elif page == "Customer Analytics":
         if "segment_name" in segments.columns:
             st.bar_chart(segments["segment_name"].value_counts())
 
-
 # Ticket Classifier
 elif page == "Ticket Classifier":
-    st.header("ðŸŽ« Support Ticket Classifier")
+    st.header("🎫 Support Ticket Classifier")
 
     model_file = MODEL_DIR / "ticket_classifier.joblib"
 
@@ -170,18 +169,28 @@ elif page == "Ticket Classifier":
     if st.button("Classify Ticket"):
         if not ticket_text.strip():
             st.warning("Please enter a customer complaint.")
-        elif not model_file.exists():
-            st.error("Model not found. Run ticket_classification.py first.")
         else:
-            import joblib
+            try:
+                # Train the model automatically if it doesn't exist
+                if not model_file.exists():
+                    from ticket_classification import train_model
 
-            model = joblib.load(model_file)
-            category = model.predict([ticket_text])[0]
+                    with st.spinner("Training ticket classifier..."):
+                        train_model()
 
-            st.success(f"Predicted category: {category}")
-            st.caption(
-                "Demo prediction only. Verify the result before using it."
-            )
+                # Load model and predict
+                import joblib
+
+                model = joblib.load(model_file)
+                category = model.predict([ticket_text])[0]
+
+                st.success(f"Predicted category: {category}")
+                st.caption(
+                    "Demo prediction only. Verify the result before using it."
+                )
+
+            except Exception as exc:
+                st.error(f"Could not classify ticket: {exc}")
 
 # SQL Analytics
 elif page == "SQL Analytics":
