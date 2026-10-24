@@ -125,6 +125,7 @@ else:
             rfm.to_csv(
     REPORT_DIR / "rfm_customer_analysis.csv",
     index=False
-            )if _name_ == "_main_":
+            )
+            if _name_ == "_main_":
     print("Customer analysis completed.")
               
