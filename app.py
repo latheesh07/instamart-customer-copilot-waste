@@ -183,8 +183,8 @@ elif page == "Customer Analytics":
                 st.error("RFM analysis failed.")
                 st.code(result.stderr or result.stdout)
 
-        except Exception as exc:
-            st.error(f"RFM analysis error:
+       except Exception as exc:
+            st.error(f"RFM analysis error: {exc}")
 
         # Segment distribution
         if "advanced_segment" in rfm_df.columns:
