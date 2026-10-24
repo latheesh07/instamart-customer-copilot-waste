@@ -119,7 +119,46 @@ else:
             rfm["customer_segment"] = rfm.apply(
                 segment_customer, axis=1
             )
+# RFM Scoring (1 to 5)
+            valid_customers = rfm["frequency"] > 0
 
+            rfm["recency_score"] = 1
+            rfm["frequency_score"] = 1
+            rfm["monetary_score"] = 1
+
+            if valid_customers.sum() >= 5:
+                active_rfm = rfm.loc[valid_customers]
+
+                rfm.loc[valid_customers, "recency_score"] = (
+                    pd.qcut(
+                        active_rfm["recency"].rank(method="first"),
+                        5,
+                        labels=[5, 4, 3, 2, 1]
+                    ).astype(int)
+                )
+
+                rfm.loc[valid_customers, "frequency_score"] = (
+                    pd.qcut(
+                        active_rfm["frequency"].rank(method="first"),
+                        5,
+                        labels=[1, 2, 3, 4, 5]
+                    ).astype(int)
+                )
+
+                rfm.loc[valid_customers, "monetary_score"] = (
+                    pd.qcut(
+                        active_rfm["monetary"].rank(method="first"),
+                        5,
+                        labels=[1, 2, 3, 4, 5]
+                    ).astype(int)
+                )
+
+            rfm["rfm_score"] = (
+                rfm["recency_score"].astype(str)
+                + rfm["frequency_score"].astype(str)
+                + rfm["monetary_score"].astype(str)
+            )
+            
             rfm = rfm.drop(columns=["last_order_date"])
 
             rfm.to_csv(
