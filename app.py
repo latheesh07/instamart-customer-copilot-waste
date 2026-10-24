@@ -139,6 +139,26 @@ elif page == "Ticket Classifier":
             st.caption(
                 "Demo prediction only. Verify the result before using it."
             )
+# Initialize SQLite database
+DB_PATH = DATA_DIR / "instamart.db"
+SCHEMA_PATH = BASE_DIR / "schema.sql"
+
+def initialize_database():
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
+
+    with sqlite3.connect(DB_PATH) as conn:
+        if SCHEMA_PATH.exists():
+            schema = SCHEMA_PATH.read_text(encoding="utf-8")
+            statements = [
+                statement.strip()
+                for statement in schema.split(";")
+                if statement.strip().upper().startswith("CREATE TABLE")
+            ]
+
+            for statement in statements:
+                conn.execute(statement)
+
+initialize_database()
 
 # SQL Analytics
 elif page == "SQL Analytics":
