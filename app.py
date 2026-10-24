@@ -155,6 +155,46 @@ elif page == "Customer Analytics":
 
         if "segment_name" in segments.columns:
             st.bar_chart(segments["segment_name"].value_counts())
+            # RFM Customer Analysis
+    st.divider()
+    st.subheader("RFM Customer Analysis")
+
+    rfm_file = REPORT_DIR / "rfm_customer_analysis.csv"
+
+    if st.button("Generate RFM Analysis"):
+        try:
+            from analyze_customers import main
+
+            main()
+        except ImportError:
+            st.info(
+                "The analysis script currently runs directly. "
+                "We will connect it to the app in the next step."
+            )
+        except Exception as exc:
+            st.error(f"RFM analysis error: {exc}")
+
+    if rfm_file.exists():
+        rfm_df = pd.read_csv(rfm_file)
+
+        st.dataframe(rfm_df, use_container_width=True)
+
+        if "customer_segment" in rfm_df.columns:
+            st.subheader("Customer Segment Distribution")
+            st.bar_chart(
+                rfm_df["customer_segment"].value_counts()
+            )
+
+        st.download_button(
+            "Download RFM Report",
+            data=rfm_df.to_csv(index=False).encode("utf-8"),
+            file_name="rfm_customer_analysis.csv",
+            mime="text/csv",
+        )
+    else:
+        st.caption(
+            "Click Generate RFM Analysis to create the first report."
+        )
 
 # Lapse Prediction
 elif page == "Lapse Prediction":
