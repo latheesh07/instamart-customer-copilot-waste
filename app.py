@@ -161,7 +161,7 @@ elif page == "Customer Analytics":
 
     rfm_file = REPORT_DIR / "rfm_customer_analysis.csv"
 
-if st.button("🔄 Generate RFM Analysis"):
+    if st.button("🔄 Generate RFM Analysis"):
         import subprocess
         import sys
 
@@ -177,39 +177,14 @@ if st.button("🔄 Generate RFM Analysis"):
 
             if result.returncode == 0:
                 st.success("RFM analysis generated successfully!")
-
                 if result.stdout:
                     st.text(result.stdout)
-
             else:
                 st.error("RFM analysis failed.")
                 st.code(result.stderr or result.stdout)
 
         except Exception as exc:
-            st.error(f"RFM analysis error: {exc}")
-    if rfm_file.exists():
-        rfm_df = pd.read_csv(rfm_file)
-
-        # Summary metrics
-        st.subheader("Customer Insights")
-
-        metric1, metric2, metric3 = st.columns(3)
-
-        metric1.metric("Total Customers", len(rfm_df))
-
-        if "advanced_segment" in rfm_df.columns:
-            metric2.metric(
-                "Champions",
-                int((rfm_df["advanced_segment"] == "Champions").sum())
-            )
-
-            metric3.metric(
-                "At Risk",
-                int((rfm_df["advanced_segment"] == "At Risk").sum())
-            )
-        else:
-            metric2.metric("Champions", "Generate updated report")
-            metric3.metric("At Risk", "Generate updated report")
+            st.error(f"RFM analysis error:
 
         # Segment distribution
         if "advanced_segment" in rfm_df.columns:
