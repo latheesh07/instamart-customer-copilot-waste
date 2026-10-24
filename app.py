@@ -155,32 +155,31 @@ elif page == "Customer Analytics":
 
         if "segment_name" in segments.columns:
             st.bar_chart(segments["segment_name"].value_counts())
-            # RFM Customer Analysis
+# RFM Customer Analysis
     st.divider()
     st.subheader("RFM Customer Analysis")
 
     rfm_file = REPORT_DIR / "rfm_customer_analysis.csv"
 
-   if st.button("Generate RFM Analysis"):
+    if st.button("Generate RFM Analysis"):
         import subprocess
         import sys
-        from pathlib import Path
 
-        script_path = Path("src") / "analyze_customers.py"
+        script_path = BASE_DIR / "src" / "analyze_customers.py"
 
         try:
             result = subprocess.run(
                 [sys.executable, str(script_path)],
                 capture_output=True,
                 text=True,
-                cwd=".",
+                cwd=str(BASE_DIR),
             )
 
             if result.returncode == 0:
                 st.success("Customer analysis completed.")
                 st.text(result.stdout)
             else:
-                st.error(result.stderr)
+                st.error(result.stderr or "Analysis failed.")
 
         except Exception as exc:
             st.error(f"RFM analysis error: {exc}")
@@ -205,7 +204,7 @@ elif page == "Customer Analytics":
     else:
         st.caption(
             "Click Generate RFM Analysis to create the first report."
-        )
+        )           
 
 # Lapse Prediction
 elif page == "Lapse Prediction":
