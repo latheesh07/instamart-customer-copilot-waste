@@ -161,7 +161,7 @@ elif page == "Customer Analytics":
 
     rfm_file = REPORT_DIR / "rfm_customer_analysis.csv"
 
-   if st.button("🔄 Generate RFM Analysis"):
+if st.button("🔄 Generate RFM Analysis"):
         import subprocess
         import sys
 
