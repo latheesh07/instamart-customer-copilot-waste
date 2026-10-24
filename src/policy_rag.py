@@ -27,10 +27,8 @@ def split_policy_into_sections(policy_text):
 
 
 def search_policy(question, top_k=3):
-    """Retrieve policy sections relevant to a question."""
-    policy_text = load_policy()
-    sections = split_policy_into_sections(policy_text)
-
+    top_k = int(top_k)
+    top_k = max(1, top_k)
     if not sections:
         return []
 
