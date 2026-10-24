@@ -33,6 +33,7 @@ page = st.sidebar.radio(
     [
         "Dashboard",
         "Customer Analytics",
+        "Lapse Prediction",
         "SQL Analytics",
         "Ticket Classifier",
         "Policy Assistant",
