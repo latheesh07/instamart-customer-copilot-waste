@@ -24,11 +24,19 @@ def split_policy_into_sections(policy_text):
         if section.strip()
     ]
     return sections
-
-
+    
 def search_policy(question, top_k=3):
-    top_k = int(top_k)
+    if isinstance(top_k, (list, tuple)):
+        top_k = top_k[0] if top_k else 3
+
+    try:
+        top_k = int(top_k)
+    except (TypeError, ValueError):
+        top_k = 3
+
     top_k = max(1, top_k)
+
+
     if not sections:
         return []
 
