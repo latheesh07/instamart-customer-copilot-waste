@@ -157,11 +157,11 @@ elif page == "Customer Analytics":
             st.bar_chart(segments["segment_name"].value_counts())
 # RFM Customer Analysis
     st.divider()
-    st.subheader("RFM Customer Analysis")
+    st.subheader("📊 RFM Customer Analysis")
 
     rfm_file = REPORT_DIR / "rfm_customer_analysis.csv"
 
-    if st.button("Generate RFM Analysis"):
+    if st.button("🔄 Generate RFM Analysis"):
         import subprocess
         import sys
 
@@ -176,10 +176,11 @@ elif page == "Customer Analytics":
             )
 
             if result.returncode == 0:
-                st.success("Customer analysis completed.")
-                st.text(result.stdout)
+                st.success("RFM analysis generated successfully!")
+                st.rerun()
             else:
-                st.error(result.stderr or "Analysis failed.")
+                st.error("RFM analysis failed.")
+                st.code(result.stderr or result.stdout)
 
         except Exception as exc:
             st.error(f"RFM analysis error: {exc}")
@@ -187,24 +188,66 @@ elif page == "Customer Analytics":
     if rfm_file.exists():
         rfm_df = pd.read_csv(rfm_file)
 
-        st.dataframe(rfm_df, use_container_width=True)
+        # Summary metrics
+        st.subheader("Customer Insights")
 
-        if "customer_segment" in rfm_df.columns:
-            st.subheader("Customer Segment Distribution")
-            st.bar_chart(
-                rfm_df["customer_segment"].value_counts()
+        metric1, metric2, metric3 = st.columns(3)
+
+        metric1.metric("Total Customers", len(rfm_df))
+
+        if "advanced_segment" in rfm_df.columns:
+            metric2.metric(
+                "Champions",
+                int((rfm_df["advanced_segment"] == "Champions").sum())
             )
 
+            metric3.metric(
+                "At Risk",
+                int((rfm_df["advanced_segment"] == "At Risk").sum())
+            )
+        else:
+            metric2.metric("Champions", "Generate updated report")
+            metric3.metric("At Risk", "Generate updated report")
+
+        # Segment distribution
+        if "advanced_segment" in rfm_df.columns:
+            st.subheader("Customer Segment Distribution")
+
+            segment_counts = (
+                rfm_df["advanced_segment"]
+                .value_counts()
+            )
+
+            st.bar_chart(segment_counts)
+
+        # RFM score distribution
+        if "rfm_score" in rfm_df.columns:
+            st.subheader("RFM Score Distribution")
+
+            score_counts = (
+                rfm_df["rfm_score"]
+                .value_counts()
+                .sort_index()
+            )
+
+            st.bar_chart(score_counts)
+
+        # Full report
+        st.subheader("RFM Customer Report")
+        st.dataframe(rfm_df, use_container_width=True)
+
+        # Download report
         st.download_button(
-            "Download RFM Report",
+            "📥 Download RFM Report",
             data=rfm_df.to_csv(index=False).encode("utf-8"),
             file_name="rfm_customer_analysis.csv",
             mime="text/csv",
         )
+
     else:
-        st.caption(
-            "Click Generate RFM Analysis to create the first report."
-        )           
+        st.info(
+            "Click 'Generate RFM Analysis' to create your first report."
+        )     
 
 # Lapse Prediction
 elif page == "Lapse Prediction":
