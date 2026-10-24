@@ -197,7 +197,33 @@ else:
                 rfm["recency_score"].astype(str)
                 + rfm["frequency_score"].astype(str)
                 + rfm["monetary_score"].astype(str)
+            )  
+            # Advanced Customer Segmentation
+            def classify_rfm(row):
+                if row["frequency"] == 0:
+                    return "No Recorded Orders"
+                elif (
+                    row["recency_score"] >= 4
+                    and row["frequency_score"] >= 4
+                    and row["monetary_score"] >= 4
+                ):
+                    return "Champions"
+                elif (
+                    row["frequency_score"] >= 4
+                    and row["recency_score"] >= 3
+                ):
+                    return "Loyal Customers"
+                elif row["recency_score"] >= 4:
+                    return "Recent Customers"
+                elif row["recency"] > 60:
+                    return "At Risk"
+                else:
+                    return "Needs Engagement"
+
+            rfm["advanced_segment"] = rfm.apply(
+                classify_rfm, axis=1
             )
+            
             rfm = rfm.drop(columns=["last_order_date"])
 
             rfm.to_csv(
