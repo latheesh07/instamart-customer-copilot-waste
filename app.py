@@ -166,6 +166,7 @@ elif page == "Customer Analytics":
         import sys
 
         script_path = BASE_DIR / "src" / "analyze_customers.py"
+
         try:
             result = subprocess.run(
                 [sys.executable, str(script_path)],
@@ -184,6 +185,53 @@ elif page == "Customer Analytics":
 
         except Exception as exc:
             st.error(f"RFM analysis error: {exc}")
+
+    if rfm_file.exists():
+        rfm_df = pd.read_csv(rfm_file)
+
+        st.subheader("Customer Insights")
+
+        col1, col2, col3 = st.columns(3)
+
+        col1.metric("Total Customers", len(rfm_df))
+
+        if "advanced_segment" in rfm_df.columns:
+            col2.metric(
+                "Champions",
+                int((rfm_df["advanced_segment"] == "Champions").sum()),
+            )
+            col3.metric(
+                "At Risk",
+                int((rfm_df["advanced_segment"] == "At Risk").sum()),
+            )
+        else:
+            col2.metric("Champions", "Not available")
+            col3.metric("At Risk", "Not available")
+
+        if "advanced_segment" in rfm_df.columns:
+            st.subheader("Customer Segment Distribution")
+            st.bar_chart(rfm_df["advanced_segment"].value_counts())
+
+        if "rfm_score" in rfm_df.columns:
+            st.subheader("RFM Score Distribution")
+            st.bar_chart(
+                rfm_df["rfm_score"].value_counts().sort_index()
+            )
+
+        st.subheader("RFM Customer Report")
+        st.dataframe(rfm_df, use_container_width=True)
+
+        st.download_button(
+            "📥 Download RFM Report",
+            data=rfm_df.to_csv(index=False).encode("utf-8"),
+            file_name="rfm_customer_analysis.csv",
+            mime="text/csv",
+        )
+
+    else:
+        st.info(
+            "Click 'Generate RFM Analysis' to create your first report."
+        )
 
         # Segment distribution
         if "advanced_segment" in rfm_df.columns:
