@@ -1,0 +1,24 @@
+DEMO REFUND POLICY
+
+This is a fictional policy created for the Instamart Customer Intelligence & Support Copilot capstone project. It is not an official Instamart policy.
+
+1. Damaged Product:
+Customers reporting damaged products should provide their order ID and a description of the issue. The request must be reviewed before a decision is made.
+
+2. Missing Item:
+Customers reporting missing items should provide their order ID and identify the missing product. The request must be reviewed.
+
+3. Wrong Item:
+Customers who receive an incorrect item should provide their order ID and describe the item received.
+
+4. Refund Requests:
+Submitting a refund request does not guarantee approval. All requests remain Pending Review until checked by an authorized reviewer.
+
+5. Privacy:
+Do not include passwords, payment card numbers, OTPs, or other sensitive information in support messages.
+
+6. Final Decision:
+This demo assistant cannot approve refunds or issue payments. Refund decisions require human review.
+
+IMPORTANT:
+This document is synthetic demonstration content, not a real company policy.
