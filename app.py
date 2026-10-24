@@ -161,13 +161,13 @@ elif page == "Customer Analytics":
 
     rfm_file = REPORT_DIR / "rfm_customer_analysis.csv"
 
-    if st.button("🔄 Generate RFM Analysis"):
+   if st.button("🔄 Generate RFM Analysis"):
         import subprocess
         import sys
 
         script_path = BASE_DIR / "src" / "analyze_customers.py"
-        
-           try:
+
+        try:
             result = subprocess.run(
                 [sys.executable, str(script_path)],
                 capture_output=True,
@@ -177,8 +177,10 @@ elif page == "Customer Analytics":
 
             if result.returncode == 0:
                 st.success("RFM analysis generated successfully!")
+
                 if result.stdout:
                     st.text(result.stdout)
+
             else:
                 st.error("RFM analysis failed.")
                 st.code(result.stderr or result.stdout)
