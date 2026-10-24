@@ -175,9 +175,13 @@ elif page == "Customer Analytics":
                 cwd=str(BASE_DIR),
             )
 
-            if result.returncode == 0:
-                st.success("RFM analysis generated successfully!")
-                st.rerun()
+           if result.returncode == 0:
+    st.success("RFM analysis generated successfully!")
+
+    if result.stdout:
+        st.text(result.stdout)
+
+    st.rerun()
             else:
                 st.error("RFM analysis failed.")
                 st.code(result.stderr or result.stdout)
