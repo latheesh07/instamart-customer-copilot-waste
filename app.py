@@ -195,8 +195,10 @@ elif page == "Ticket Classifier":
 
 # SQL Analytics
 elif page == "SQL Analytics":
-# Lapse Prediction
-elif page == "Lapse Prediction":
+    st.header("SQLite Database Analytics")
+
+    DB_PATH = DATA_DIR / "instamart.db"
+    
     st.header("Customer Lapse Prediction")
 
     st.caption(
