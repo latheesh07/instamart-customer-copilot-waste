@@ -166,7 +166,7 @@ elif page == "Customer Analytics":
         import sys
 
         script_path = BASE_DIR / "src" / "analyze_customers.py"
-try:
+        try:
             result = subprocess.run(
                 [sys.executable, str(script_path)],
                 capture_output=True,
