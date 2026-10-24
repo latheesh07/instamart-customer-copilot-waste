@@ -204,13 +204,17 @@ elif page == "Customer Analytics":
                 "At Risk",
                 int((rfm_df["advanced_segment"] == "At Risk").sum()),
             )
+
+            st.subheader("Customer Segment Distribution")
+            st.bar_chart(
+                rfm_df["advanced_segment"].value_counts()
+            )
         else:
             col2.metric("Champions", "Not available")
             col3.metric("At Risk", "Not available")
-
-        if "advanced_segment" in rfm_df.columns:
-            st.subheader("Customer Segment Distribution")
-            st.bar_chart(rfm_df["advanced_segment"].value_counts())
+            st.warning(
+                "Advanced segments unavailable. Generate the RFM report again."
+            )
 
         if "rfm_score" in rfm_df.columns:
             st.subheader("RFM Score Distribution")
@@ -232,7 +236,6 @@ elif page == "Customer Analytics":
         st.info(
             "Click 'Generate RFM Analysis' to create your first report."
         )
-
         # Segment distribution
         if "advanced_segment" in rfm_df.columns:
             st.subheader("Customer Segment Distribution")
