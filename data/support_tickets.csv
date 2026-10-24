@@ -1,0 +1,26 @@
+ticket_id,ticket_text,category
+T001,My order has not arrived yet,Delivery
+T002,The delivery person is late,Delivery
+T003,My package is delayed,Delivery
+T004,Where is my order,Delivery
+T005,I received a damaged product,Damaged Product
+T006,The product arrived broken,Damaged Product
+T007,My item is damaged,Damaged Product
+T008,The package was damaged,Damaged Product
+T009,I received the wrong item,Wrong Item
+T010,This is not the product I ordered,Wrong Item
+T011,Wrong product delivered,Wrong Item
+T012,I got a different item,Wrong Item
+T013,I want my money back,Refund
+T014,My refund has not arrived,Refund
+T015,Please process my refund,Refund
+T016,Refund is still pending,Refund
+T017,Payment failed but money was deducted,Payment
+T018,I was charged twice,Payment
+T019,My payment is unsuccessful,Payment
+T020,There is a duplicate payment,Payment
+T021,The app is not opening,App Issue
+T022,The application keeps crashing,App Issue
+T023,I cannot log in to the app,App Issue
+T024,The app is not working properly,App Issue
+T025,I want to cancel my order,Cancellation
