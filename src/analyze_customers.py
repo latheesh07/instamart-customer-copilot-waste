@@ -126,6 +126,6 @@ else:
     REPORT_DIR / "rfm_customer_analysis.csv",
     index=False
 )
-
-                if __name__ == "__main__":
-    print("Customer analysis script completed.")
+if _name_ == "_main_":
+    print("Customer analysis completed.")
+              
