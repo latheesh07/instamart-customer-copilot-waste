@@ -1,4 +1,4 @@
-﻿from pathlib import Path
+from pathlib import Path
 import sys
 import sqlite3
 import pandas as pd
@@ -15,17 +15,21 @@ sys.path.insert(0, str(SRC_DIR))
 
 st.set_page_config(
     page_title="Instamart Customer Copilot",
-    page_icon="ðŸ›’",
+    page_icon="🛒",
     layout="wide",
 )
 
-st.title("ðŸ›’ Instamart Customer Intelligence")
+st.title("🛒 Instamart Customer Intelligence")
 st.subheader("Customer Analytics & Support Copilot")
 
 st.info(
     "Student project prototype using synthetic customer data "
     "and a fictional demo policy. Not connected to Instamart."
 )
+
+# Ensure required folders exist
+DATA_DIR.mkdir(parents=True, exist_ok=True)
+REPORT_DIR.mkdir(parents=True, exist_ok=True)
 
 # Sidebar navigation
 page = st.sidebar.radio(
@@ -40,12 +44,13 @@ page = st.sidebar.radio(
         "Refund Requests",
     ],
 )
-# Initialize SQLite database
+
+# SQLite database paths
 DB_PATH = DATA_DIR / "instamart.db"
 SCHEMA_PATH = BASE_DIR / "schema.sql"
-def initialize_database():
-    DATA_DIR.mkdir(parents=True, exist_ok=True)
 
+
+def initialize_database():
     with sqlite3.connect(DB_PATH) as conn:
         if SCHEMA_PATH.exists():
             schema = SCHEMA_PATH.read_text(encoding="utf-8")
@@ -62,7 +67,6 @@ def initialize_database():
         customers_file = DATA_DIR / "customers.csv"
         if customers_file.exists():
             customers = pd.read_csv(customers_file)
-
             customers.to_sql(
                 "customers",
                 conn,
@@ -73,7 +77,6 @@ def initialize_database():
         tickets_file = DATA_DIR / "support_tickets.csv"
         if tickets_file.exists():
             tickets = pd.read_csv(tickets_file)
-
             tickets.to_sql(
                 "support_tickets",
                 conn,
@@ -85,7 +88,9 @@ def initialize_database():
 initialize_database()
 
 
+# =========================================================
 # Dashboard
+# =========================================================
 if page == "Dashboard":
     st.header("Project Overview")
 
@@ -97,21 +102,27 @@ if page == "Dashboard":
 
     if customers_file.exists():
         customers = pd.read_csv(customers_file)
+
         col1.metric("Sample Customers", len(customers))
-        col2.metric("Sample Orders", int(customers["total_orders"].sum()))
+        col2.metric(
+            "Sample Orders",
+            int(customers["total_orders"].sum()),
+        )
         col3.metric(
             "Sample Spending",
-            f"â‚¹{customers['total_spend'].sum():,.0f}",
+            f"₹{customers['total_spend'].sum():,.0f}",
         )
     else:
         st.warning("Customer dataset not found.")
 
     st.markdown("### Available Modules")
     st.write("- Customer data analysis")
-    st.write("- Machine learning customer segmentation")
-    st.write("- Customer support ticket classification")
+    st.write("- Customer segmentation")
+    st.write("- Support ticket classification")
     st.write("- Policy-based question answering")
     st.write("- Refund request recording")
+    st.write("- RFM customer analysis")
+    st.write("- Customer lapse prediction")
 
     if tickets_file.exists():
         st.caption("Sample support tickets are available.")
@@ -120,9 +131,11 @@ if page == "Dashboard":
         st.caption("Customer segmentation results are available.")
 
 
+# =========================================================
 # Customer Analytics
+# =========================================================
 elif page == "Customer Analytics":
-    st.header("ðŸ“Š Customer Analytics")
+    st.header("📊 Customer Analytics")
 
     customer_file = DATA_DIR / "customers.csv"
     segment_file = REPORT_DIR / "customer_segments.csv"
@@ -131,22 +144,31 @@ elif page == "Customer Analytics":
         df = pd.read_csv(customer_file)
 
         col1, col2 = st.columns(2)
+
         col1.metric("Customers", len(df))
-        col2.metric("Total Spending", f"â‚¹{df['total_spend'].sum():,.0f}")
+
+        if "total_spend" in df.columns:
+            col2.metric(
+                "Total Spending",
+                f"₹{df['total_spend'].sum():,.0f}",
+            )
 
         st.subheader("Customer Dataset")
         st.dataframe(df, use_container_width=True)
 
-        st.subheader("City-wise Customer Count")
-        st.bar_chart(df["city"].value_counts())
+        if "city" in df.columns:
+            st.subheader("City-wise Customer Count")
+            st.bar_chart(df["city"].value_counts())
 
-        st.subheader("Customer Spending")
-        st.bar_chart(
-            df.set_index("customer_id")["total_spend"]
-        )
+        if {"customer_id", "total_spend"}.issubset(df.columns):
+            st.subheader("Customer Spending")
+            st.bar_chart(
+                df.set_index("customer_id")["total_spend"]
+            )
     else:
         st.error("Run generate_data.py first.")
 
+    # Existing customer segments
     if segment_file.exists():
         segments = pd.read_csv(segment_file)
 
@@ -155,7 +177,8 @@ elif page == "Customer Analytics":
 
         if "segment_name" in segments.columns:
             st.bar_chart(segments["segment_name"].value_counts())
-# RFM Customer Analysis
+
+    # RFM Customer Analysis
     st.divider()
     st.subheader("📊 RFM Customer Analysis")
 
@@ -163,9 +186,8 @@ elif page == "Customer Analytics":
 
     if st.button("🔄 Generate RFM Analysis"):
         import subprocess
-        import sys
 
-        script_path = BASE_DIR / "src" / "analyze_customers.py"
+        script_path = SRC_DIR / "analyze_customers.py"
 
         try:
             result = subprocess.run(
@@ -173,110 +195,100 @@ elif page == "Customer Analytics":
                 capture_output=True,
                 text=True,
                 cwd=str(BASE_DIR),
+                timeout=120,
             )
 
             if result.returncode == 0:
                 st.success("RFM analysis generated successfully!")
+
                 if result.stdout:
                     st.text(result.stdout)
             else:
                 st.error("RFM analysis failed.")
                 st.code(result.stderr or result.stdout)
 
+        except subprocess.TimeoutExpired:
+            st.error("RFM analysis timed out. Please try again.")
+
         except Exception as exc:
             st.error(f"RFM analysis error: {exc}")
 
+    # Display RFM report only when it exists
     if rfm_file.exists():
-        rfm_df = pd.read_csv(rfm_file)
+        try:
+            rfm_df = pd.read_csv(rfm_file)
 
-        st.subheader("Customer Insights")
+            st.subheader("Customer Insights")
 
-        col1, col2, col3 = st.columns(3)
+            col1, col2, col3 = st.columns(3)
 
-        col1.metric("Total Customers", len(rfm_df))
+            col1.metric("Total Customers", len(rfm_df))
 
-        if "advanced_segment" in rfm_df.columns:
-            col2.metric(
-                "Champions",
-                int((rfm_df["advanced_segment"] == "Champions").sum()),
+            if "advanced_segment" in rfm_df.columns:
+                col2.metric(
+                    "Champions",
+                    int(
+                        (
+                            rfm_df["advanced_segment"] == "Champions"
+                        ).sum()
+                    ),
+                )
+
+                col3.metric(
+                    "At Risk",
+                    int(
+                        (
+                            rfm_df["advanced_segment"] == "At Risk"
+                        ).sum()
+                    ),
+                )
+
+                st.subheader("Customer Segment Distribution")
+
+                st.bar_chart(
+                    rfm_df["advanced_segment"].value_counts()
+                )
+            else:
+                col2.metric("Champions", "Not available")
+                col3.metric("At Risk", "Not available")
+
+                st.warning(
+                    "Advanced segments are missing. "
+                    "Regenerate the RFM report after checking "
+                    "src/analyze_customers.py."
+                )
+
+            if "rfm_score" in rfm_df.columns:
+                st.subheader("RFM Score Distribution")
+
+                st.bar_chart(
+                    rfm_df["rfm_score"]
+                    .value_counts()
+                    .sort_index()
+                )
+
+            st.subheader("RFM Customer Report")
+            st.dataframe(rfm_df, use_container_width=True)
+
+            st.download_button(
+                "📥 Download RFM Report",
+                data=rfm_df.to_csv(index=False).encode("utf-8"),
+                file_name="rfm_customer_analysis.csv",
+                mime="text/csv",
             )
-            col3.metric(
-                "At Risk",
-                int((rfm_df["advanced_segment"] == "At Risk").sum()),
-            )
 
-            st.subheader("Customer Segment Distribution")
-            st.bar_chart(
-                rfm_df["advanced_segment"].value_counts()
-            )
-        else:
-            col2.metric("Champions", "Not available")
-            col3.metric("At Risk", "Not available")
-            st.warning(
-                "Advanced segments unavailable. Generate the RFM report again."
-            )
-
-        if "rfm_score" in rfm_df.columns:
-            st.subheader("RFM Score Distribution")
-            st.bar_chart(
-                rfm_df["rfm_score"].value_counts().sort_index()
-            )
-
-        st.subheader("RFM Customer Report")
-        st.dataframe(rfm_df, use_container_width=True)
-
-        st.download_button(
-            "📥 Download RFM Report",
-            data=rfm_df.to_csv(index=False).encode("utf-8"),
-            file_name="rfm_customer_analysis.csv",
-            mime="text/csv",
-        )
+        except Exception as exc:
+            st.error(f"Could not read the RFM report: {exc}")
 
     else:
         st.info(
             "Click 'Generate RFM Analysis' to create your first report."
         )
-        # Segment distribution
-        if "advanced_segment" in rfm_df.columns:
-            st.subheader("Customer Segment Distribution")
 
-            segment_counts = (
-                rfm_df["advanced_segment"]
-                .value_counts()
-            )
 
-            st.bar_chart(segment_counts)
-
-        # RFM score distribution
-        if "rfm_score" in rfm_df.columns:
-            st.subheader("RFM Score Distribution")
-
-            score_counts = (
-                rfm_df["rfm_score"]
-                .value_counts()
-                .sort_index()
-            )
-
-            st.bar_chart(score_counts)
-
-        # Full report
-        st.subheader("RFM Customer Report")
-        st.dataframe(rfm_df, use_container_width=True)
-
-        # Download report
-        st.download_button(
-            "📥 Download RFM Report",
-            data=rfm_df.to_csv(index=False).encode("utf-8"),
-            file_name="rfm_customer_analysis.csv",
-            mime="text/csv",
-        )
-
-    else:
-        st.info(
-            "Click 'Generate RFM Analysis' to create your first report."
-        )     
-
+# =========================================================
 # Lapse Prediction
+# =========================================================
 elif page == "Lapse Prediction":
     st.header("Customer Lapse Prediction")
 
@@ -313,7 +325,90 @@ elif page == "Lapse Prediction":
         except Exception as exc:
             st.error(f"Lapse prediction error: {exc}")
 
+    elif lapse_file.exists():
+        st.subheader("Previous Lapse Prediction Report")
+
+        try:
+            df_lapse = pd.read_csv(lapse_file)
+            st.dataframe(df_lapse, use_container_width=True)
+        except Exception as exc:
+            st.error(f"Could not read lapse report: {exc}")
+
+
+# =========================================================
+# SQL Analytics
+# =========================================================
+elif page == "SQL Analytics":
+    st.header("SQLite Database Analytics")
+
+    if not DB_PATH.exists():
+        st.error("Database not found. Please check the data files.")
+    else:
+        try:
+            with sqlite3.connect(DB_PATH) as conn:
+                customer_count = conn.execute(
+                    "SELECT COUNT(*) FROM customers"
+                ).fetchone()[0]
+
+                ticket_count = conn.execute(
+                    "SELECT COUNT(*) FROM support_tickets"
+                ).fetchone()[0]
+
+                col1, col2 = st.columns(2)
+
+                col1.metric("Database Customers", customer_count)
+                col2.metric("Support Tickets", ticket_count)
+
+                st.subheader("City-wise Customer Spending")
+
+                city_data = pd.read_sql_query(
+                    """
+                    SELECT
+                        city,
+                        COUNT(*) AS customer_count,
+                        SUM(total_spend) AS total_spending
+                    FROM customers
+                    GROUP BY city
+                    ORDER BY total_spending DESC
+                    """,
+                    conn,
+                )
+
+                st.dataframe(city_data, use_container_width=True)
+
+                if not city_data.empty:
+                    st.bar_chart(
+                        city_data.set_index("city")["total_spending"]
+                    )
+
+                st.subheader("Support Tickets by Category")
+
+                ticket_data = pd.read_sql_query(
+                    """
+                    SELECT
+                        category,
+                        COUNT(*) AS ticket_count
+                    FROM support_tickets
+                    GROUP BY category
+                    ORDER BY ticket_count DESC
+                    """,
+                    conn,
+                )
+
+                st.dataframe(ticket_data, use_container_width=True)
+
+                if not ticket_data.empty:
+                    st.bar_chart(
+                        ticket_data.set_index("category")["ticket_count"]
+                    )
+
+        except Exception as exc:
+            st.error(f"SQL analytics error: {exc}")
+
+
+# =========================================================
 # Ticket Classifier
+# =========================================================
 elif page == "Ticket Classifier":
     st.header("🎫 Support Ticket Classifier")
 
@@ -329,131 +424,39 @@ elif page == "Ticket Classifier":
             st.warning("Please enter a customer complaint.")
         else:
             try:
-                # Train the model automatically if it doesn't exist
                 if not model_file.exists():
                     from ticket_classification import train_model
 
                     with st.spinner("Training ticket classifier..."):
                         train_model()
 
-                # Load model and predict
                 import joblib
 
-                model = joblib.load(model_file)
-                category = model.predict([ticket_text])[0]
+                if not model_file.exists():
+                    st.error(
+                        "Model file was not created. "
+                        "Check the ticket classification script."
+                    )
+                else:
+                    model = joblib.load(model_file)
+                    category = model.predict([ticket_text])[0]
 
-                st.success(f"Predicted category: {category}")
-                st.caption(
-                    "Demo prediction only. Verify the result before using it."
-                )
+                    st.success(f"Predicted category: {category}")
+
+                    st.caption(
+                        "Demo prediction only. "
+                        "Verify the result before using it."
+                    )
 
             except Exception as exc:
                 st.error(f"Could not classify ticket: {exc}")
 
-# SQL Analytics
-elif page == "SQL Analytics":
-    st.header("SQLite Database Analytics")
 
-    DB_PATH = DATA_DIR / "instamart.db"
-    
-    st.header("Customer Lapse Prediction")
-
-    st.caption(
-        "Demo inactivity analysis using synthetic order history. "
-        "This is a rule-based prototype, not a trained ML model."
-    )
-
-    lapse_file = REPORT_DIR / "lapse_predictions.csv"
-
-    if st.button("Generate Lapse Predictions"):
-        try:
-            from lapse_prediction import predict_lapse
-
-            predict_lapse()
-
-            if lapse_file.exists():
-                df_lapse = pd.read_csv(lapse_file)
-
-                st.success("Lapse report generated successfully!")
-
-                st.dataframe(
-                    df_lapse,
-                    use_container_width=True
-                )
-
-                st.download_button(
-                    "Download Lapse Predictions CSV",
-                    data=df_lapse.to_csv(index=False).encode("utf-8"),
-                    file_name="lapse_predictions.csv",
-                    mime="text/csv",
-                )
-            else:
-                st.warning(
-                    "Report not created. Check orders.csv and customer IDs."
-                )
-
-        except Exception as exc:
-            st.error(f"Lapse prediction error: {exc}")
-    st.header("SQLite Database Analytics")
-
-    DB_PATH = DATA_DIR / "instamart.db"
-
-    if not DB_PATH.exists():
-        st.error("Database not found. Please run the data import script.")
-    else:
-        with sqlite3.connect(DB_PATH) as conn:
-            customer_count = conn.execute(
-                "SELECT COUNT(*) FROM customers"
-            ).fetchone()[0]
-
-            ticket_count = conn.execute(
-                "SELECT COUNT(*) FROM support_tickets"
-            ).fetchone()[0]
-
-            col1, col2 = st.columns(2)
-            col1.metric("Database Customers", customer_count)
-            col2.metric("Support Tickets", ticket_count)
-
-            st.subheader("City-wise Customer Spending")
-
-            city_data = pd.read_sql_query(
-                """
-                SELECT city,
-                       COUNT(*) AS customer_count,
-                       SUM(total_spend) AS total_spending
-                FROM customers
-                GROUP BY city
-                ORDER BY total_spending DESC
-                """,
-                conn,
-            )
-
-            st.dataframe(city_data, use_container_width=True)
-
-            st.bar_chart(
-                city_data.set_index("city")["total_spending"]
-            )
-
-            st.subheader("Support Tickets by Category")
-
-            ticket_data = pd.read_sql_query(
-                """
-                SELECT category, COUNT(*) AS ticket_count
-                FROM support_tickets
-                GROUP BY category
-                ORDER BY ticket_count DESC
-                """,
-                conn,
-            )
-
-            st.dataframe(ticket_data, use_container_width=True)
-
-            st.bar_chart(
-                ticket_data.set_index("category")["ticket_count"]
-            )
+# =========================================================
 # Policy Assistant
+# =========================================================
 elif page == "Policy Assistant":
-    st.header("ðŸ“– Demo Policy Assistant")
+    st.header("📖 Demo Policy Assistant")
 
     policy_file = DATA_DIR / "refund_policy.txt"
 
@@ -465,8 +468,10 @@ elif page == "Policy Assistant":
     if st.button("Search Policy"):
         if not question.strip():
             st.warning("Please enter a question.")
+
         elif not policy_file.exists():
             st.error("refund_policy.txt was not found.")
+
         else:
             try:
                 from policy_rag import (
@@ -491,12 +496,16 @@ elif page == "Policy Assistant":
             except Exception as exc:
                 st.error(f"Policy search error: {exc}")
 
-    st.caption("This uses a fictional demo policy, not official Instamart policy.")
+    st.caption(
+        "This uses a fictional demo policy, not official Instamart policy."
+    )
 
 
+# =========================================================
 # Refund Requests
+# =========================================================
 elif page == "Refund Requests":
-    st.header("ðŸ’° Refund Request Workflow")
+    st.header("💰 Refund Request Workflow")
 
     refund_file = DATA_DIR / "refund_requests.csv"
 
@@ -521,9 +530,14 @@ elif page == "Refund Requests":
 
     if submitted:
         if not all(
-            [customer_id.strip(), order_id.strip(), description.strip()]
+            [
+                customer_id.strip(),
+                order_id.strip(),
+                description.strip(),
+            ]
         ):
             st.warning("Please complete all required fields.")
+
         else:
             from datetime import datetime
             import csv
@@ -537,13 +551,17 @@ elif page == "Refund Requests":
                 "reason": reason,
                 "description": description.strip(),
                 "status": "Pending Review",
-                "created_at": datetime.now().isoformat(timespec="seconds"),
+                "created_at": datetime.now().isoformat(
+                    timespec="seconds"
+                ),
             }
 
             exists = refund_file.exists()
 
             with refund_file.open(
-                "a", newline="", encoding="utf-8"
+                "a",
+                newline="",
+                encoding="utf-8",
             ) as file:
                 writer = csv.DictWriter(
                     file,
@@ -556,13 +574,15 @@ elif page == "Refund Requests":
                 writer.writerow(request)
 
             st.success(f"Request recorded: {request_id}")
-            st.info("Status: Pending Review. No automatic refund is issued.")
+            st.info(
+                "Status: Pending Review. No automatic refund is issued."
+            )
 
     if refund_file.exists():
         st.subheader("Recorded Refund Requests")
 
-        requests = pd.read_csv(refund_file)
-        st.dataframe(requests, use_container_width=True)
-
-
-
+        try:
+            requests = pd.read_csv(refund_file)
+            st.dataframe(requests, use_container_width=True)
+        except Exception as exc:
+            st.error(f"Could not read refund requests: {exc}")
